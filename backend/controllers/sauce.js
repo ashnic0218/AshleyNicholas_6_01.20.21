@@ -2,7 +2,7 @@ const Sauce = require('../models/sauce');
 const fs = require('fs');
 
 
-exports.createSauce = (req, res, next) => {
+exports.createSauce = (req, res, next) => { // creating new sauces added in add sauce
     req.body.sauce = JSON.parse(req.body.sauce);
     const url = req.protocol + '://' + req.get('host');
     // console.log('req.body.sauce', req.body.sauce);
@@ -35,7 +35,7 @@ exports.createSauce = (req, res, next) => {
     );
 };
 
-exports.getOneSauce = (req, res, next) => {
+exports.getOneSauce = (req, res, next) => { // locates one sauce to be able to look at entry on website
   Sauce.findOne({
     _id: req.params.id
   }).then(
@@ -54,11 +54,11 @@ exports.getOneSauce = (req, res, next) => {
 exports.modifySauce = (req, res, next) => {
   let sauce = new Sauce({ _id: req.params._id });
   
-  if (req.file) {
-      Sauce.findOne({
+  if (req.file) { // checking what was updated
+      Sauce.findOne({ // using find one to isolate the sauce user wants to change
           _id: req.params.id
       }).then((data) => {
-          console.log(data)
+          console.log(data) // to change image file
           const originalFilename = data.imageUrl.split('/images/')[1]
           fs.unlink('images/' + originalFilename, () => {
               console.log('Removed old image')
@@ -70,14 +70,14 @@ exports.modifySauce = (req, res, next) => {
       sauce = {
           _id: req.params.id,
           // userId: req.body.sauce.userId,
-          name: req.body.sauce.name,
+          name: req.body.sauce.name, // to change any other information about the sauce
           manufacturer: req.body.sauce.manufacturer,
           description: req.body.sauce.description,
           mainPepper: req.body.sauce.mainPepper,
           imageUrl: url + '/images/' + req.file.filename,
           heat: req.body.sauce.heat,
       };
-  } else {
+  } else { // leaves things unchanged if unchanged and updates to new sauce
       
       sauce = {
           _id: req.params.id,
@@ -90,7 +90,7 @@ exports.modifySauce = (req, res, next) => {
           heat: req.body.heat,
       };
   }
-  Sauce.updateOne({_id: req.params.id}, sauce).then(
+  Sauce.updateOne({_id: req.params.id}, sauce).then( // updates sauce and rewrites the entry in the database
       () => {
       res.status(201).json({
           message: 'Sauce updated successfully!'
@@ -105,7 +105,7 @@ exports.modifySauce = (req, res, next) => {
   );
 };
 
-exports.deleteSauce = (req, res, next) => {
+exports.deleteSauce = (req, res, next) => { // removes current selected sauce from database
     Sauce.findOne({_id: req.params.id}).then(
       (sauce) => {
         const filename = sauce.imageUrl.split('/images/')[1];
@@ -147,7 +147,7 @@ exports.getLikes = (req, res, next) => {
   // find the sauce using Sauce.findOne()
   // use a conditional that lets me know which thumb has been clicked using req.body.like that will give a number (1, -1, 0)
   console.log(req.body);
-      Sauce.findOne({_id: req.params.id}).then(
+      Sauce.findOne({_id: req.params.id}).then( // which sauce am I working with
           (sauce) => {
 
               const sauceUpdate = {
@@ -182,10 +182,10 @@ exports.getLikes = (req, res, next) => {
                   // delete userId from usersLiked array and subtract 1 form likes array
                   // some returns a true or false to see if user id is in array
 
-                  if (sauceUpdate.likes > 0) { // to ensure we don't get negative numbers due to double userid although this should not happen
+                  if (sauceUpdate.likes > 0) { // to ensure we don't get negative numbers due to double userid although this should not happen. Example of putting a test safety in code
                       sauceUpdate.likes -= 1
-                      const userIndex = sauceUpdate.usersLiked.findIndex(user => user === req.body.userId) //find index will return the first instance of the user id is in the array
-                      sauceUpdate.usersLiked.splice(userIndex, 1) 
+                      const userIndex = sauceUpdate.usersLiked.findIndex(user => user === req.body.userId) //find index will return the first instance of the user id that is in the array
+                      sauceUpdate.usersLiked.splice(userIndex, 1) //splice removes that instance
                       console.log({'from like to 0': sauceUpdate})
                   }
 
@@ -201,10 +201,10 @@ exports.getLikes = (req, res, next) => {
                   }
               }
 
-          Sauce.updateOne({_id: req.params.id}, sauceUpdate)
+          Sauce.updateOne({_id: req.params.id}, sauceUpdate) // updates amount of likes on sauce
           .then(() => {
               res.status(201).json({
-                  message: 'Great Sauce!'
+                  message: 'We hear you!'
           });
           })
           .catch(
